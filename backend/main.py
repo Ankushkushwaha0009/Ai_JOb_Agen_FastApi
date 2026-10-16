@@ -3,6 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import UploadFile , File , HTTPException
 from pypdf import PdfReader
 from io import BytesIO
+from pydantic import BaseModel
+
+class skillsMatchRequest(BaseModel) : 
+    required_skills : list[str] 
+    having_skills : list[str]
 
 app = FastAPI(
     title="AI Job Agent API",
@@ -75,16 +80,18 @@ async def upload_resume(file : UploadFile  = File(...)) :
         "resume_text" : resume_text
     }
 
-def match_skills(required_skills , having_skills) :
+@app.post("/jobs/match-skills")
+def match_skills(request : skillsMatchRequest) :
 
-    required = {skill.lower() for skill in required_skills}
-    having   = {skill.lower() for skill in having_skills} 
-    
+    required = {skill.lower() for skill in request.required_skills}
+    having   = {skill.lower() for skill in request.having_skills} 
+
     matched_skills = required & having
     missing_skills = required - having
 
     if not required : 
         match_percentage = 0 
+        
     else :
         match_percentage = (len(matched_skills) / len(required))  * 100 ;
 
@@ -93,8 +100,3 @@ def match_skills(required_skills , having_skills) :
         "missing_skills" : list(missing_skills) , 
         "match_percentage" : match_percentage
     }
-
-required_skills = ["React", "MongoDB", "Python", "FastAPI", "Node.js"]
-having_skills = ["react", "mongodb", "python"]
-
-print(match_skills(required_skills, having_skills))
