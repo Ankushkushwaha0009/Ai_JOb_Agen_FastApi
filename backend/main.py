@@ -29,7 +29,6 @@ def home():
 def health_check():
     return {"status": "healthy"}
 
-
 # Important: async does not make every line run in parallel. 
 # It allows asynchronous operations to yield control while waiting
 
@@ -75,3 +74,27 @@ async def upload_resume(file : UploadFile  = File(...)) :
         "content_type" : file.content_type ,
         "resume_text" : resume_text
     }
+
+def match_skills(required_skills , having_skills) :
+
+    required = {skill.lower() for skill in required_skills}
+    having   = {skill.lower() for skill in having_skills} 
+    
+    matched_skills = required & having
+    missing_skills = required - having
+
+    if not required : 
+        match_percentage = 0 
+    else :
+        match_percentage = (len(matched_skills) / len(required))  * 100 ;
+
+    return {
+        "matched_skills" : list(matched_skills) , 
+        "missing_skills" : list(missing_skills) , 
+        "match_percentage" : match_percentage
+    }
+
+required_skills = ["React", "MongoDB", "Python", "FastAPI", "Node.js"]
+having_skills = ["react", "mongodb", "python"]
+
+print(match_skills(required_skills, having_skills))
